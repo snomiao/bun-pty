@@ -53,6 +53,15 @@ function resolveLibPath(): string {
 
 const libPath = resolveLibPath();
 
+// Quote a string for shell-words compatible splitting on the Rust side.
+// We are not invoking a shell; quoting is only to preserve token boundaries
+// when Rust parses the command line with shell_words::split.
+function shQuote(s: string): string {
+	if (s.length === 0) return "''";
+	// Replace ' with '\'' (close-quote, escaped ', reopen)
+	return `'${s.replace(/'/g, `\'\\'\'`)}'`;
+}
+
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
 let lib: any;
 
@@ -105,7 +114,9 @@ export class Terminal implements IPty {
 		this._rows = opts.rows ?? DEFAULT_ROWS;
 		const cwd = opts.cwd ?? process.cwd();
 
-		const cmdline = [file, ...args].join(" ");
+		// Build a shell-words compatible command line so Rust can reconstruct
+		// the exact argv even when args contain spaces or quotes.
+		const cmdline = [file, ...args].map(shQuote).join(" ");
 
 		this.handle = lib.symbols.bun_pty_spawn(
 			Buffer.from(`${cmdline}\0`, "utf8"),
