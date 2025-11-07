@@ -6,6 +6,14 @@
 
 A cross-platform pseudo-terminal (PTY) implementation for Bun, powered by Rust's portable-pty library and Bun's FFI capabilities.
 
+## 🔧 Fork Improvements
+
+This fork includes critical fixes for argument handling:
+
+- **Fixed Quote Problem**: Properly escapes arguments containing spaces and special characters using POSIX-style single-quote escaping
+- **Improved shell_words Compatibility**: Arguments are now correctly tokenized on the Rust side, preventing issues with commands that contain spaces or quotes
+- **Preserves Original Behavior**: The fix is transparent and doesn't change the API - your existing code will work better automatically
+
 ## 🚀 Features
 
 - **Cross-platform** - Works on macOS, Linux, and Windows
@@ -18,7 +26,7 @@ A cross-platform pseudo-terminal (PTY) implementation for Bun, powered by Rust's
 ## 📦 Installation
 
 ```bash
-bun add bun-pty
+bun add @snomiao/bun-pty
 ```
 
 ## ⚙️ Requirements
@@ -39,7 +47,7 @@ bun add bun-pty
 ### Basic Example
 
 ```typescript
-import { spawn } from "bun-pty";
+import { spawn } from "@snomiao/bun-pty";
 
 // Create a new terminal
 const terminal = spawn("bash", [], {
@@ -70,13 +78,31 @@ setTimeout(() => {
 }, 5000);
 ```
 
+### Arguments with Spaces and Special Characters
+
+This fork fixes a critical issue where arguments containing spaces or quotes were incorrectly tokenized. The fix is automatic and transparent:
+
+```typescript
+import { spawn } from "@snomiao/bun-pty";
+
+// These commands now work correctly:
+const terminal1 = spawn("echo", ["hello world", "with spaces"]);
+const terminal2 = spawn("bash", ["-c", "echo 'quoted command'"]);
+const terminal3 = spawn("ls", ["/path/with spaces/file.txt"]);
+
+// Previously, arguments with spaces would be split incorrectly
+// Now they're properly escaped for the Rust backend
+```
+
+The fix uses POSIX-style single-quote escaping internally, so `"hello world"` becomes `'hello world'` when passed to the Rust side, ensuring proper argument boundaries.
+
 ### TypeScript Usage
 
 The library includes complete TypeScript definitions. Here's how to use it with full type safety:
 
 ```typescript
-import { spawn } from "bun-pty";
-import type { IPty, IExitEvent, IPtyForkOptions } from "bun-pty";
+import { spawn } from "@snomiao/bun-pty";
+import type { IPty, IExitEvent, IPtyForkOptions } from "@snomiao/bun-pty";
 
 // Create typed options
 const options: IPtyForkOptions = {
@@ -106,7 +132,7 @@ exitHandler.dispose();
 ### Interactive Shell Example
 
 ```typescript
-import { spawn } from "bun-pty";
+import { spawn } from "@snomiao/bun-pty";
 import { createInterface } from "node:readline";
 
 // Create a PTY running bash
@@ -215,8 +241,8 @@ The npm package includes prebuilt binaries for macOS, Linux, and Windows. If you
 
 ```bash
 # In your project directory
-bun add bun-pty
-cd node_modules/bun-pty
+bun add @snomiao/bun-pty
+cd node_modules/@snomiao/bun-pty
 bun run build
 ```
 
@@ -224,6 +250,27 @@ bun run build
 
 - **Error: Unable to load shared library**: Make sure you have the necessary system libraries installed.
 - **Process spawn fails**: Check if you have the required permissions and paths.
+
+### Quote Problem Fix Details
+
+This fork addresses a critical argument parsing issue in the original bun-pty:
+
+**Problem**: When passing arguments containing spaces or quotes to `spawn()`, the original implementation would incorrectly split them during command line construction. For example:
+
+```typescript
+// This would fail in the original version
+spawn("echo", ["hello world"]) // "world" would be treated as a separate argument
+```
+
+**Solution**: Added a `shQuote()` helper function that properly escapes arguments using POSIX-style single-quote escaping:
+
+- Empty strings become `''`
+- Single quotes are escaped as `\'\'\'` (close-quote, escaped single quote, reopen)
+- All arguments are wrapped in single quotes for safe parsing
+
+**Technical Implementation**: The fix modifies `src/terminal.ts` to escape arguments before joining them into a command line string, ensuring that when the Rust backend uses `shell_words::split()`, it reconstructs the exact original arguments.
+
+This is purely a compatibility fix for the argument parsing layer - no shell execution is involved.
 
 ## 📄 License
 
