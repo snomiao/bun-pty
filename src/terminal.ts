@@ -51,7 +51,7 @@ function resolveLibPath(): string {
 	const base = Bun.fileURLToPath(import.meta.url);
 	const fileDir = dirname(base);
 	const dirName = basename(fileDir);
-	
+
 	// Handle both development (src/terminal.ts) and production (dist/terminal.js) cases
 	// If we're in src/ or dist/, go up one level to get the project root
 	const here = (dirName === "src" || dirName === "dist")
