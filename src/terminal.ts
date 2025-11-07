@@ -34,7 +34,7 @@ function resolveLibPath(): string {
 
 	// Start from the current module's location (inside node_modules/bun-pty/dist)
 	const base = Bun.fileURLToPath(import.meta.url);
-	const here = base.replace(/\/dist\/.*$/, ""); // up to bun-pty/
+	const here = base.replace(/[\/\\]dist[\/\\].*$/, ""); // up to bun-pty/
 
 	const fallbackPaths = [
 		join(here, "rust-pty", "target", "release", filename),       // node_modules/bun-pty/rust-pty/target/release
