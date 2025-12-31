@@ -138,3 +138,5 @@ dist
 # Rust build artifacts
 rust-pty/target/
 target
+
+.DS_Store
