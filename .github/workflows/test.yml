@@ -4,6 +4,9 @@ on:
   pull_request:
     branches:
       - main
+  push:
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -15,7 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - runner: ubuntu-latest
+          - runner: ubuntu-20.04
             target: x86_64-unknown-linux-gnu
           - runner: macos-latest
             target: x86_64-apple-darwin
