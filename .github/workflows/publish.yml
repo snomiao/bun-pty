@@ -1,6 +1,11 @@
-name: Manual Publish Package
+name: Publish Package
 
 on:
+  # Auto-publish on pushes to main
+  push:
+    branches:
+      - main
+  # Allow manual publishing
   release:
     types: [created, edited]
   workflow_dispatch:
@@ -13,20 +18,66 @@ env:
   RELEASE_DIR: rust-pty/target/release
 
 jobs:
+  version-and-release:
+    runs-on: ubuntu-latest
+    # Only run on push to main (skip for manual triggers)
+    if: github.event_name == 'push' && !contains(github.event.head_commit.message, '[skip ci]')
+    outputs:
+      new-release-published: ${{ steps.semantic.outputs.new-release-published }}
+      new-release-version: ${{ steps.semantic.outputs.new-release-version }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run tests
+        run: bun run test:unit
+
+      - name: Fetch latest from remote
+        run: git fetch origin main
+
+      - name: Semantic Release
+        id: semantic
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          npx semantic-release
+
   build-libs:
     runs-on: ${{ matrix.runner }}
+    # Run if: (1) auto-release succeeded, OR (2) manual trigger
+    needs: [version-and-release]
+    if: |
+      always() &&
+      (needs.version-and-release.outputs.new-release-published == 'true' ||
+       github.event_name == 'workflow_dispatch' ||
+       github.event_name == 'release')
     strategy:
       fail-fast: false
       matrix:
         include:
-          # TODO: solve this:
-          # ubuntu-latest have latest glibc (2.39+)
-          # but compiled dist doesnt runs in outdated systems
-          # e.g. debian 12 which have <2.30
-          - runner: ubuntu-latest
+          # Use ubuntu-20.04 for Linux builds to ensure glibc 2.31 compatibility
+          # This allows binaries to run on older systems like Debian 12 (glibc <2.30)
+          # ubuntu-latest has glibc 2.39+ which causes compatibility issues
+          - runner: ubuntu-20.04
             target: x86_64-unknown-linux-gnu
             out:    librust_pty.so
-          - runner: ubuntu-latest
+          - runner: ubuntu-20.04
             target: aarch64-unknown-linux-gnu
             out:    librust_pty_arm64.so
           - runner: macos-latest
@@ -41,6 +92,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'push' && 'main' || github.ref }}
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -91,14 +144,23 @@ jobs:
           fail_on_unmatched_files: true
 
   publish:
-    needs: build-libs
+    needs: [version-and-release, build-libs]
+    # Run if: (1) auto-release succeeded, OR (2) manual trigger and build succeeded
+    if: |
+      always() &&
+      needs.build-libs.result == 'success' &&
+      (needs.version-and-release.outputs.new-release-published == 'true' ||
+       github.event_name == 'workflow_dispatch' ||
+       github.event_name == 'release')
     runs-on: ubuntu-latest
     permissions:
       id-token: write
       contents: read
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'push' && 'main' || github.ref }}
 
       - uses: oven-sh/setup-bun@v2
         with:
