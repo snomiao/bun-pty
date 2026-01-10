@@ -30,6 +30,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Code Refactoring
 
+* merge auto-publish into publish.yml and fix glibc compatibility ([dc41691](https://github.com/snomiao/bun-pty/commit/dc4169127e7bf57cad7b8d5ac4b150f504a06a6a))
+* remove erroneous console log ([#4](https://github.com/snomiao/bun-pty/issues/4)) ([a3acd79](https://github.com/snomiao/bun-pty/commit/a3acd79e2f636426bbe7863a6b5e0a8dcd12f410))
+
+## 1.0.0 (2026-01-10)
+
+### Features
+
+* improve argument handling and add semantic-release automation ([64f3bc3](https://github.com/snomiao/bun-pty/commit/64f3bc35719fb8baff1390bbb2108e3b6966b042))
+* pass env from options ([#9](https://github.com/snomiao/bun-pty/issues/9)) ([ea4f0ae](https://github.com/snomiao/bun-pty/commit/ea4f0aeb1f60070db9a6243535e3d1e6e7f20e06))
+
+### Bug Fixes
+
+* build ([2baf111](https://github.com/snomiao/bun-pty/commit/2baf1113b25781eb023b79c85bee059980ba2dfd))
+* build ([1251e00](https://github.com/snomiao/bun-pty/commit/1251e00549673a545f946a849c5ee3265888fc53))
+* builds ([6ef2965](https://github.com/snomiao/bun-pty/commit/6ef2965d832c659751dd71e7fdd413ecaec4b5f3))
+* capture actual exit code from child process ([#10](https://github.com/snomiao/bun-pty/issues/10)) ([7a9a6d2](https://github.com/snomiao/bun-pty/commit/7a9a6d2aec88543615f3eada921f71a55d44aad5))
+* ci: update GitHub Actions runner to ubuntu-latest\n\nThis commit updates the GitHub Actions runner to use  instead of specifying  for better compatibility and maintenance. ([7d40141](https://github.com/snomiao/bun-pty/commit/7d401412a1c8b173e23404577dedb8e95ceffbff))
+* cross platform ([bf0036a](https://github.com/snomiao/bun-pty/commit/bf0036a2049865a1e9c0158bfe0fc3c55370d7ca))
+* enable bun compile support and fix Windows path handling ([#25](https://github.com/snomiao/bun-pty/issues/25)) ([0dbea9b](https://github.com/snomiao/bun-pty/commit/0dbea9bb8ff6c633ebe2767991067d801798f284))
+* lib name ([813d94d](https://github.com/snomiao/bun-pty/commit/813d94dee255f9cb414de5bbaff08a0a5ca13160))
+* path on docker ([12ba21c](https://github.com/snomiao/bun-pty/commit/12ba21ce0e0171dd4a8d4c40cfff4d97fa205cc2))
+* properly quote args to preserve spaces and special characters ([9c8c835](https://github.com/snomiao/bun-pty/commit/9c8c835bbbc2e1e7f9d95bd9218cb7a86dcf6f27)), closes [#12](https://github.com/snomiao/bun-pty/issues/12) [#15](https://github.com/snomiao/bun-pty/issues/15)
+* release pipeline ([931a60e](https://github.com/snomiao/bun-pty/commit/931a60eddf828fecaab45ee9e1f0ca66e0bf3682))
+* restore .d.ts type declarations for TypeScript compatibility ([#28](https://github.com/snomiao/bun-pty/issues/28)) ([685d24a](https://github.com/snomiao/bun-pty/commit/685d24af4fad051ce00ac3d76932918d086d983c))
+* use ubuntu-22.04 for GLIBC 2.35 compatibility ([#23](https://github.com/snomiao/bun-pty/issues/23)) ([db635ae](https://github.com/snomiao/bun-pty/commit/db635ae05545e88991913bb9a299987549e1eb56))
+
+### Code Refactoring
+
 * remove erroneous console log ([#4](https://github.com/snomiao/bun-pty/issues/4)) ([a3acd79](https://github.com/snomiao/bun-pty/commit/a3acd79e2f636426bbe7863a6b5e0a8dcd12f410))
 
 ## 1.0.0 (2026-01-10)
