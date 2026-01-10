@@ -19,10 +19,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - runner: ubuntu-20.04
+          - runner: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             out:    librust_pty.so
-          - runner: ubuntu-20.04
+          - runner: ubuntu-latest
             target: aarch64-unknown-linux-gnu
             out:    librust_pty_arm64.so
           - runner: macos-latest
