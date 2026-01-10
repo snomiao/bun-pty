@@ -48,8 +48,10 @@ jobs:
       - name: Run tests
         run: bun run test:unit
 
-      - name: Fetch latest from remote
-        run: git fetch origin main
+      - name: Fetch latest from remote with tags
+        run: |
+          git fetch origin main --tags
+          git tag -l
 
       - name: Semantic Release
         id: semantic
