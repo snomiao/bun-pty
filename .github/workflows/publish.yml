@@ -48,11 +48,11 @@ jobs:
       - name: Run tests
         run: bun run test:unit
 
-      - name: Fetch all tags
+      - name: Fetch all tags from remote
         run: |
           git fetch --tags --force
           echo "All tags:"
-          git tag -l | sort -V | tail -10
+          git tag -l | sort -V
           echo "Latest tag:"
           git describe --tags --abbrev=0 2>/dev/null || echo "No tags found"
 
