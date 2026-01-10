@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1](https://github.com/snomiao/bun-pty/compare/v1.0.0...v1.0.1) (2026-01-10)
+
+### Bug Fixes
+
+* **ci:** use ubuntu-22.04 instead of deprecated ubuntu-20.04 ([650294b](https://github.com/snomiao/bun-pty/commit/650294b3c11c02a53807d0ef263055bac1f3d856))
+
 ## 1.0.0 (2026-01-10)
 
 ### Features
