@@ -32,20 +32,6 @@ function resolveLibPath(): string {
 	const env = process.env.BUN_PTY_LIB;
 	if (env && existsSync(env)) return env;
 
-	// For bun compile: use statically analyzable require with inline ternary.
-	// Bun evaluates process.platform and process.arch at compile time and only
-	// bundles the file for the target platform. The ternary MUST be inline
-	// in the template literal for Bun's static analysis to work.
-	// See: https://github.com/sursaone/bun-pty/issues/19
-	try {
-		// @ts-ignore - require returns path for binary files in Bun
-		const embeddedPath = require(`../rust-pty/target/release/${process.platform === "win32" ? "rust_pty.dll" : process.platform === "darwin" ? (process.arch === "arm64" ? "librust_pty_arm64.dylib" : "librust_pty.dylib") : process.arch === "arm64" ? "librust_pty_arm64.so" : "librust_pty.so"}`);
-		if (embeddedPath) return embeddedPath;
-	} catch {
-		// Not running as compiled binary, fall through to dynamic resolution
-	}
-
-	// Fallback: dynamic resolution for development scenarios
 	const platform = process.platform;
 	const arch = process.arch;
 
@@ -65,7 +51,7 @@ function resolveLibPath(): string {
 	const base = Bun.fileURLToPath(import.meta.url);
 	const fileDir = dirname(base);
 	const dirName = basename(fileDir);
-	
+
 	// Handle both development (src/terminal.ts) and production (dist/terminal.js) cases
 	// If we're in src/ or dist/, go up one level to get the project root
 	const here = (dirName === "src" || dirName === "dist")
@@ -137,10 +123,6 @@ export class Terminal implements IPty {
 	private _readLoop = false;
 	private _closing = false;
 
-	// TextDecoder with streaming mode to properly handle UTF-8 across chunk boundaries
-	// Without this, multi-byte characters (like box-drawing ─) that span chunks become �
-	private readonly _decoder = new TextDecoder("utf-8");
-
 	private readonly _onData = new EventEmitter<string>();
 	private readonly _onExit = new EventEmitter<IExitEvent>();
 
@@ -152,8 +134,8 @@ export class Terminal implements IPty {
 		this._cols = opts.cols ?? DEFAULT_COLS;
 		this._rows = opts.rows ?? DEFAULT_ROWS;
 		const cwd = opts.cwd ?? process.cwd();
-		// Properly quote file and arguments to preserve spaces and special characters
-		const cmdline = [shQuote(file), ...args.map(shQuote)].join(" ");
+		// Properly quote arguments to preserve spaces and special characters
+		const cmdline = [file, ...args.map(shQuote)].join(" ");
 
 		// Format environment variables as null-terminated string
 		let envStr = "";
@@ -231,27 +213,14 @@ export class Terminal implements IPty {
 		while (this._readLoop && !this._closing) {
 			const n = lib.symbols.bun_pty_read(this.handle, ptr(buf), buf.length);
 			if (n > 0) {
-				// Use streaming mode to buffer incomplete UTF-8 sequences across chunks
-				// This prevents corruption when multi-byte chars span chunk boundaries
-				const decoded = this._decoder.decode(buf.subarray(0, n), { stream: true });
-				if (decoded) {
-					this._onData.fire(decoded);
-				}
+				this._onData.fire(buf.subarray(0, n).toString("utf8"));
 			} else if (n === -2) {
-				// CHILD_EXITED - flush any remaining bytes in the decoder
-				const remaining = this._decoder.decode();
-				if (remaining) {
-					this._onData.fire(remaining);
-				}
+				// CHILD_EXITED
 				const exitCode = lib.symbols.bun_pty_get_exit_code(this.handle);
 				this._onExit.fire({ exitCode });
 				break;
 			} else if (n < 0) {
-				// error - flush decoder before breaking
-				const remaining = this._decoder.decode();
-				if (remaining) {
-					this._onData.fire(remaining);
-				}
+				// error
 				break;
 			} else {
 				// 0 bytes: wait

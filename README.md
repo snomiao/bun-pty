@@ -18,7 +18,7 @@ A cross-platform pseudo-terminal (PTY) implementation for Bun, powered by Rust's
 ## 📦 Installation
 
 ```bash
-bun add bun-pty
+bun add @snomiao/bun-pty
 ```
 
 ## ⚙️ Requirements
@@ -39,7 +39,7 @@ bun add bun-pty
 ### Basic Example
 
 ```typescript
-import { spawn } from "bun-pty";
+import { spawn } from "@snomiao/bun-pty";
 
 // Create a new terminal
 const terminal = spawn("bash", [], {
@@ -75,8 +75,8 @@ setTimeout(() => {
 The library includes complete TypeScript definitions. Here's how to use it with full type safety:
 
 ```typescript
-import { spawn } from "bun-pty";
-import type { IPty, IExitEvent, IPtyForkOptions } from "bun-pty";
+import { spawn } from "@snomiao/bun-pty";
+import type { IPty, IExitEvent, IPtyForkOptions } from "@snomiao/bun-pty";
 
 // Create typed options
 const options: IPtyForkOptions = {
@@ -106,7 +106,7 @@ exitHandler.dispose();
 ### Interactive Shell Example
 
 ```typescript
-import { spawn } from "bun-pty";
+import { spawn } from "@snomiao/bun-pty";
 import { createInterface } from "node:readline";
 
 // Create a PTY running bash
@@ -233,8 +233,8 @@ The npm package includes prebuilt binaries for macOS, Linux, and Windows. If you
 
 ```bash
 # In your project directory
-bun add bun-pty
-cd node_modules/bun-pty
+bun add @snomiao/bun-pty
+cd node_modules/@snomiao/bun-pty
 bun run build
 ```
 

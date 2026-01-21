@@ -4,6 +4,9 @@ on:
   pull_request:
     branches:
       - main
+  push:
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -15,9 +18,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - runner: ubuntu-latest
+          - runner: ubuntu-20.04
             target: x86_64-unknown-linux-gnu
-            zigbuild_target: x86_64-unknown-linux-gnu.2.17
           - runner: macos-latest
             target: x86_64-apple-darwin
           - runner: macos-latest
@@ -40,20 +42,7 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
-      - name: Install zigbuild
-        if: matrix.zigbuild_target
-        run: |
-          pip3 install ziglang
-          cargo install cargo-zigbuild
-
-      - name: Build Rust library (Linux with zigbuild)
-        if: matrix.zigbuild_target
-        run: |
-          cd rust-pty
-          cargo zigbuild --release --target ${{ matrix.zigbuild_target }}
-
       - name: Build Rust library
-        if: "!matrix.zigbuild_target"
         run: |
           cd rust-pty
           cargo build --release --target ${{ matrix.target }}
